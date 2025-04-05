@@ -1,10 +1,14 @@
 {
   "name": "@restin/error-monitor",
-  "version": "0.1.1",
-  "description": "Based on Vue3 error monitoring and performance tracking plug-in",
+  "version": "0.1.5",
+  "description": "Comprehensive error monitoring and reporting solution for Vue 3 applications.",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
-  "types": "types/index.d.ts",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
@@ -46,6 +50,7 @@
     "eslint": "^8.57.1",
     "husky": "^9.1.7",
     "jest": "^28.1.1",
+    "jest-environment-jsdom": "^29.7.0",
     "lint-staged": "^15.5.0",
     "prettier": "3.5.3",
     "rollup": "^2.75.6",

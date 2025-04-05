@@ -5,6 +5,7 @@ A comprehensive Vue3 error monitoring and performance tracking plugin that helps
 ## Features
 
 - **Comprehensive Error Capture**
+
   - Global JavaScript exception capture
   - Promise exception capture
   - Vue component internal exceptions
@@ -12,6 +13,7 @@ A comprehensive Vue3 error monitoring and performance tracking plugin that helps
   - Resource loading exceptions
 
 - **Performance Monitoring**
+
   - Page load performance
   - Web Vitals metrics (FCP, LCP, CLS, FID)
   - Long task detection
@@ -20,15 +22,18 @@ A comprehensive Vue3 error monitoring and performance tracking plugin that helps
   - Resource loading performance
 
 - **White Screen Detection**
+
   - DOM node-based detection
   - Custom detection rules
 
 - **Route Monitoring**
+
   - Vue Router route change monitoring
   - Route performance tracking
   - Route error capture
 
 - **State Management Monitoring**
+
   - Vuex/Pinia state snapshots
   - Action/Mutation tracking
   - State change monitoring
@@ -44,5 +49,5 @@ A comprehensive Vue3 error monitoring and performance tracking plugin that helps
 ## Installation
 
 ```bash
-npm install vue3-error-monitor
+npm i @restin/error-monitor
 ```

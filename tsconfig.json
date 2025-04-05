@@ -5,7 +5,8 @@
     "moduleResolution": "node",
     "strict": true,
     "declaration": true,
-    "declarationDir": "dist/types",
+    "declarationDir": "dist",  // 修改为直接输出到 dist 目录
+    "outDir": "dist",
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,

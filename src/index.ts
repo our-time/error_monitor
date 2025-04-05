@@ -14,18 +14,20 @@ export { ErrorMonitor, PerformanceMonitor, RouteMonitor, StateMonitor, ReportSer
 
 export default {
   install(app: App, userConfig: Partial<Config> = {}) {
+    // Validate and merge configurations
+    if (!app) {
+      throw new Error('Vue app instance is required')
+    }
     const config = { ...defaultConfig, ...userConfig }
 
-    // 初始化 TraceID 管理器
-    const traceManager = new TraceManager()
+    // Initialize core services
+    const traceManager = new TraceManager() // 初始化 TraceID 管理器
+    const reportService = new ReportService(config.reportConfig) // 初始化上报服务
+    const sourceMapService = new SourceMapService(config.sourceMapConfig) // 初始化 SourceMap 服务
+
+    // Provide services to the application
     app.provide('traceManager', traceManager)
-
-    // 初始化上报服务
-    const reportService = new ReportService(config.reportConfig)
     app.provide('reportService', reportService)
-
-    // 初始化 SourceMap 服务
-    const sourceMapService = new SourceMapService(config.sourceMapConfig)
     app.provide('sourceMapService', sourceMapService)
 
     // 初始化错误监控

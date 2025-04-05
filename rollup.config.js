@@ -43,7 +43,8 @@ export default {
     typescript({
       tsconfig: './tsconfig.json',
       declaration: true,
-      declarationDir: './dist/types',
+      declarationDir: './dist',  // 修改为直接输出到 dist 目录
+      outDir: './dist'
     }),
     nodeResolve({
       extensions: ['.js', '.ts', '.d.ts'],
