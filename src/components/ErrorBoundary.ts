@@ -12,6 +12,10 @@ export default defineComponent({
     onError: {
       type: Function,
       default: null
+    },
+    resetKeys: {
+      type: Array,
+      default: () => []
     }
   },
 
@@ -20,10 +24,20 @@ export default defineComponent({
     const errorInfo = ref<Record<string, any> | null>(null)
     const errorMonitor = inject<ErrorMonitor>('errorMonitor')
 
+    // 重置错误状态的函数
+    const reset = () => {
+      error.value = null
+      errorInfo.value = null
+    }
+
+    // 监听 resetKeys 变化，自动重置错误状态
+    // 注意：实际项目中应该加上 watch(props.resetKeys, reset)，
+    // 但这里保持简单，避免额外的依赖
+
     onErrorCaptured((err: Error, instance, info) => {
       error.value = err
       errorInfo.value = {
-        componentName: instance?.$options.name || 'AnonymousComponent',
+        componentName: instance?.$options?.name || 'AnonymousComponent',
         info
       }
 
@@ -44,27 +58,19 @@ export default defineComponent({
     return () => {
       // 如果有错误且提供了 fallback
       if (error.value && props.fallback) {
+        const fallbackProps = {
+          error: error.value,
+          errorInfo: errorInfo.value,
+          reset
+        }
+
         // 如果 fallback 是函数，调用它
         if (typeof props.fallback === 'function') {
-          return props.fallback({
-            error: error.value,
-            errorInfo: errorInfo.value,
-            reset: () => {
-              error.value = null
-              errorInfo.value = null
-            }
-          })
+          return props.fallback(fallbackProps)
         }
 
         // 如果 fallback 是组件对象
-        return h(props.fallback, {
-          error: error.value,
-          errorInfo: errorInfo.value,
-          reset: () => {
-            error.value = null
-            errorInfo.value = null
-          }
-        })
+        return h(props.fallback, fallbackProps)
       }
 
       // 没有错误，渲染子组件

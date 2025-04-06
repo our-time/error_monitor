@@ -44,8 +44,18 @@ export class FallbackService {
     // 保存当前 URL 以便恢复
     sessionStorage.setItem('errorMonitor_previousUrl', window.location.href)
 
-    // 跳转到 fallback 页面
-    window.location.href = this.config.fallbackUrl
+    // 检查是否有 router 实例可用
+    if (this.config.router) {
+      // 使用 Vue Router 进行导航
+      this.config.router.push(this.config.fallbackUrl).catch(err => {
+        console.error('Failed to navigate using router:', err)
+        // 回退到普通跳转
+        window.location.href = this.config.fallbackUrl
+      })
+    } else {
+      // 使用普通的 location 跳转
+      window.location.href = this.config.fallbackUrl
+    }
   }
 
   public destroy(): void {

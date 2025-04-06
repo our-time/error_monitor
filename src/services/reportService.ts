@@ -54,10 +54,10 @@ export class ReportService {
         appId: this.config.appId,
         appVersion: this.config.appVersion,
         environment: this.config.environment,
-        category: 'error',
+        category: 'error'
       },
       timestamp: Date.now(),
-      retryCount: 0,
+      retryCount: 0
     }
 
     // 前置处理钩子
@@ -100,10 +100,10 @@ export class ReportService {
         appId: this.config.appId,
         appVersion: this.config.appVersion,
         environment: this.config.environment,
-        category: 'performance',
+        category: 'performance'
       },
       timestamp: Date.now(),
-      retryCount: 0,
+      retryCount: 0
     }
 
     // 前置处理钩子
@@ -146,7 +146,7 @@ export class ReportService {
     this.sendBatchReport(batch)
       .catch(() => {
         // 发送失败，重新加入队列等待重试
-        batch.forEach((item) => {
+        batch.forEach(item => {
           item.retryCount++
           if (item.retryCount <= this.config.maxRetryCount) {
             this.queue.unshift(item)
@@ -164,26 +164,55 @@ export class ReportService {
   }
 
   private async sendBatchReport(batch: ReportItem[]): Promise<void> {
+    // 检查 endpoint 是否有效
+    if (!this.config.endpoint || this.config.endpoint === '') {
+      if (this.config.debug) {
+        console.warn('Report endpoint is not configured, skipping batch report')
+      }
+      return
+    }
+
     try {
+      // Log the endpoint being used (helpful for debugging)
+      if (this.config.debug) {
+        console.log(`Sending batch report to: ${this.config.endpoint}`, {
+          batchSize: batch.length,
+          firstItem: batch[0]?.data
+        })
+      }
+
       const response = await fetch(this.config.endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...this.config.headers,
+          ...this.config.headers
         },
         body: JSON.stringify({
-          batch: batch.map((item) => item.data),
-          timestamp: Date.now(),
+          batch: batch.map(item => item.data),
+          timestamp: Date.now()
         }),
         // 在页面卸载时使用 keepalive
-        keepalive: true,
+        keepalive: true
       })
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        // Enhanced error message with more details
+        const errorText = await response.text().catch(() => 'No response text')
+        throw new Error(`HTTP error! status: ${response.status}, url: ${this.config.endpoint}, response: ${errorText}`)
+      }
+
+      // Log success if debug mode is enabled
+      if (this.config.debug) {
+        console.log(`Successfully sent batch of ${batch.length} items`)
       }
     } catch (error) {
       console.error('Error sending batch report:', error)
+
+      // Check if the endpoint is configured
+      if (!this.config.endpoint || this.config.endpoint === '') {
+        console.error('Error: Report endpoint is not configured properly')
+      }
+
       throw error
     }
   }
@@ -195,15 +224,34 @@ export class ReportService {
       return
     }
 
+    // 检查 endpoint 是否有效
+    if (!this.config.endpoint || this.config.endpoint === '') {
+      if (this.config.debug) {
+        console.warn('Report endpoint is not configured, skipping report')
+      }
+      return
+    }
+
     try {
+      // Debug logging
+      if (this.config.debug) {
+        console.log(`Sending report to: ${this.config.endpoint}`, {
+          itemId: item.id,
+          category: item.data.category
+        })
+      }
+
       // 尝试使用 Beacon API (适用于页面卸载时)
       if (this.config.useBeacon && navigator.sendBeacon) {
         const blob = new Blob([JSON.stringify(item.data)], {
-          type: 'application/json',
+          type: 'application/json'
         })
         const success = navigator.sendBeacon(this.config.endpoint, blob)
 
         if (success) {
+          if (this.config.debug) {
+            console.log('Successfully sent report using Beacon API')
+          }
           return
         }
       }
@@ -213,18 +261,29 @@ export class ReportService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...this.config.headers,
+          ...this.config.headers
         },
         body: JSON.stringify(item.data),
         // 在页面卸载时使用 keepalive
-        keepalive: true,
+        keepalive: true
       })
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        // Enhanced error message with more details
+        const errorText = await response.text().catch(() => 'No response text')
+        throw new Error(`HTTP error! status: ${response.status}, url: ${this.config.endpoint}, response: ${errorText}`)
+      }
+
+      if (this.config.debug) {
+        console.log('Successfully sent report using fetch')
       }
     } catch (error) {
       console.error('Error sending report:', error)
+
+      // Check if the endpoint is configured
+      if (!this.config.endpoint || this.config.endpoint === '') {
+        console.error('Error: Report endpoint is not configured properly')
+      }
 
       // 重试逻辑
       item.retryCount++
@@ -249,7 +308,7 @@ export class ReportService {
         this.queue.unshift(...offlineItems)
         this.processBatch()
       } else {
-        offlineItems.forEach((item) => this.sendReport(item))
+        offlineItems.forEach(item => this.sendReport(item))
       }
     }
   }
@@ -271,11 +330,11 @@ export class ReportService {
         const blob = new Blob(
           [
             JSON.stringify({
-              batch: this.queue.map((item) => item.data),
-              timestamp: Date.now(),
-            }),
+              batch: this.queue.map(item => item.data),
+              timestamp: Date.now()
+            })
           ],
-          { type: 'application/json' },
+          { type: 'application/json' }
         )
 
         navigator.sendBeacon(this.config.endpoint, blob)
@@ -291,7 +350,7 @@ export class ReportService {
     if (integrations.sentry?.enabled && window.Sentry) {
       try {
         window.Sentry.captureException(data.error || new Error(data.message), {
-          extra: data,
+          extra: data
         })
       } catch (e) {
         console.error('Failed to send to Sentry:', e)
@@ -301,12 +360,9 @@ export class ReportService {
     // LogRocket 集成
     if (integrations.logRocket?.enabled && window.LogRocket) {
       try {
-        window.LogRocket.captureException(
-          data.error || new Error(data.message),
-          {
-            extra: data,
-          },
-        )
+        window.LogRocket.captureException(data.error || new Error(data.message), {
+          extra: data
+        })
       } catch (e) {
         console.error('Failed to send to LogRocket:', e)
       }
@@ -319,7 +375,7 @@ export class ReportService {
           project: integrations.aliyunSls.project,
           logstore: integrations.aliyunSls.logstore,
           time: Math.floor(Date.now() / 1000),
-          contents: this.flattenObject(data),
+          contents: this.flattenObject(data)
         })
       } catch (e) {
         console.error('Failed to send to Aliyun SLS:', e)
@@ -357,10 +413,7 @@ export class ReportService {
 
     window.removeEventListener('online', this.handleOnline.bind(this))
     window.removeEventListener('offline', this.handleOffline.bind(this))
-    window.removeEventListener(
-      'beforeunload',
-      this.handleBeforeUnload.bind(this),
-    )
+    window.removeEventListener('beforeunload', this.handleBeforeUnload.bind(this))
   }
 }
 

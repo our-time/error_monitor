@@ -14,6 +14,7 @@ export interface ReportConfig {
   beforeReport?: (data: any) => any | false
   reportLevel?: 'error' | 'warning' | 'info' | 'debug'
   sampleRate?: number
+  debug?: boolean
   integrations?: {
     sentry?: {
       dsn: string
@@ -70,15 +71,16 @@ export interface FallbackConfig {
   fallbackUrl: string
   errorThreshold: number
   timeWindow: number
+  router?: Router // 添加可选的 router 属性
 }
 
 export interface RouteConfig {
   enabled: boolean
   router?: Router
   ignorePaths?: string[]
-  captureParams: boolean
-  captureQuery: boolean
-  captureHash: boolean
+  captureParams?: boolean
+  captureQuery?: boolean
+  captureHash?: boolean
 }
 
 export interface StateConfig {
@@ -109,12 +111,18 @@ export interface Config {
   routeConfig: RouteConfig
   stateConfig: StateConfig
   sourceMapConfig: SourceMapConfig
-  debug: boolean
+  debug?: boolean
+}
+
+export interface ErrorMonitorPluginConfig {
+  reportConfig?: ReportConfig
+  sourceMapConfig?: SourceMapConfig
+  errorConfig?: ErrorConfig
 }
 
 export const defaultConfig: Config = {
   reportConfig: {
-    endpoint: '/api/error-report',
+    endpoint: '',
     appId: '',
     appVersion: '1.0.0',
     environment: 'production',
